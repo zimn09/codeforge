@@ -1,4 +1,4 @@
-name: Build aplikací pro Windows a Linux
+name: Build Linux AppImage
 
 on:
   push:
@@ -6,35 +6,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # 1. JOB: SESTAVENÍ WINDOWS EXE
-  build-windows:
-    runs-on: windows-latest
-    steps:
-    - name: Stažení kódu z repozitáře
-      uses: actions/checkout@v4
-
-    - name: Nastavení Pythonu
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    - name: Instalace závislostí
-      run: |
-        python -m pip install --upgrade pip
-        pip install pyinstaller PySide6
-        if (Test-Path requirements.txt) { pip install -r requirements.txt }
-
-    - name: Kompilace skriptu na EXE
-      run: |
-        pyinstaller --onefile --windowed --add-data ".;." --collect-all PySide6 run.py
-
-    - name: Uložení hotového EXE jako artefakt
-      uses: actions/upload-artifact@v4
-      with:
-        name: MujProgram-Windows
-        path: dist/run.exe
-
-  # 2. JOB: SESTAVENÍ LINUX APPIMAGE (OPRAVENO)
   build-linux:
     runs-on: ubuntu-22.04
     steps:
@@ -46,17 +17,40 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Instalace nástrojů pro AppImage
+    - name: Instalace závislostí v Linuxu
       run: |
         python -m pip install --upgrade pip
-        pip install python-appimage
+        pip install pyinstaller PySide6
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: Kompilace na Linux AppImage
+    - name: Kompilace skriptu pomocí PyInstalleru pro Linux
       run: |
-        python -m appimage build --entrypoint run.py .
+        pyinstaller --onedir --add-data ".;." --collect-all PySide6 run.py
+
+    - name: Stažení a příprava AppImageTool
+      run: |
+        sudo apt-get update && sudo apt-get install -y fuse libfuse2
+        wget -O appimagetool https://github.com
+        chmod +x appimagetool
+
+    - name: Vytvoření struktury AppDir a generování AppImage
+      run: |
+        mkdir -p AppDir
+        cp -r dist/run/* AppDir/
+        
+        # Vytvoření spouštěcího skriptu AppRun
+        echo -e '#!/bin/sh\nHERE="$(dirname "$(readlink -f "${0}")")"\nexec "$HERE/run" "$@"' > AppDir/AppRun
+        chmod +x AppDir/AppRun
+        
+        # Vytvoření desktop souboru a ikony (nutné pro AppImage)
+        echo -e '[Desktop Entry]\nType=Application\nName=CodeForge\nExec=AppRun\nIcon=utility\nCategories=Utility;' > AppDir/codeforge.desktop
+        wget -O AppDir/utility.png https://githubusercontent.com
+        
+        # Sestavení finálního AppImage
+        ./appimagetool --appimage-extract-and-run AppDir/ CodeForge-Linux.AppImage
 
     - name: Uložení hotového AppImage jako artefakt
       uses: actions/upload-artifact@v4
       with:
         name: MujProgram-Linux-AppImage
-        path: "*.AppImage"
+        path: CodeForge-Linux.AppImage
