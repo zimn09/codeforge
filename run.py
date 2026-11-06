@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+"""Launch CodeForge from a versioned snapshot directory."""
+
+from __future__ import annotations
+
+import importlib
+import sys
+import types
+from pathlib import Path
+
+
+def _load_app():
+    root = Path(__file__).resolve().parent
+    package_name = "codeforge_snapshot"
+    package = types.ModuleType(package_name)
+    package.__path__ = [str(root)]
+    package.APP_NAME = "CodeForge"
+    package.__version__ = "3.0.0"
+    sys.modules[package_name] = package
+    return importlib.import_module(f"{package_name}.app")
+
+
+def main() -> int:
+    app_module = _load_app()
+    return app_module.main()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
