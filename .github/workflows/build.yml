@@ -1,4 +1,4 @@
-name: Build EXE pro Windows
+name: Build aplikací pro Windows a Linux
 
 on:
   push:
@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
 
 jobs:
+  # 1. JOB: SESTAVENÍ WINDOWS EXE (To, co vám už funguje)
   build-windows:
     runs-on: windows-latest
-
     steps:
     - name: Stažení kódu z repozitáře
       uses: actions/checkout@v4
@@ -33,3 +33,31 @@ jobs:
       with:
         name: MujProgram-Windows
         path: dist/run.exe
+
+  # 2. JOB: SESTAVENÍ LINUX APPIMAGE
+  build-linux:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Stažení kódu z repozitáře
+      uses: actions/checkout@v4
+
+    - name: Nastavení Pythonu
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Instalace nástrojů pro AppImage
+      run: |
+        python -m pip install --upgrade pip
+        pip install python-appimage
+
+    - name: Kompilace na Linux AppImage
+      run: |
+        # python-appimage zabalí aktuální složku do jednoho AppImage souboru
+        python -m appimagepack --entrypoint run.py .
+
+    - name: Uložení hotového AppImage jako artefakt
+      uses: actions/upload-artifact@v4
+      with:
+        name: MujProgram-Linux-AppImage
+        path: "*.AppImage"
