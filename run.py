@@ -18,9 +18,14 @@ if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
         sys.path.insert(0, sys._MEIPASS)
 
 # EXPLICITNÍ IMPORTY PRO PYINSTALLER
-# Zde uveďte standardní moduly, které importujete v ostatních .py souborech
 import http.server
-import socketserver # Často se používá společně s http.server
+import socketserver
+import uuid          # <--- OPRAVA PRO TUTO CHYBU
+import subprocess    # Často se používá v terminal.py pro spouštění příkazů
+import json          # Velmi časté pro konfigurace
+import threading     # Nutné pro liveserver na pozadí
+import logging       # Často využívané pro logování chyb
+
 
 
 
