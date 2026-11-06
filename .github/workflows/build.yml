@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # 1. JOB: SESTAVENÍ WINDOWS EXE (To, co vám už funguje)
+  # 1. JOB: SESTAVENÍ WINDOWS EXE
   build-windows:
     runs-on: windows-latest
     steps:
@@ -34,7 +34,7 @@ jobs:
         name: MujProgram-Windows
         path: dist/run.exe
 
-  # 2. JOB: SESTAVENÍ LINUX APPIMAGE
+  # 2. JOB: SESTAVENÍ LINUX APPIMAGE (OPRAVENO)
   build-linux:
     runs-on: ubuntu-22.04
     steps:
@@ -53,8 +53,7 @@ jobs:
 
     - name: Kompilace na Linux AppImage
       run: |
-        # python-appimage zabalí aktuální složku do jednoho AppImage souboru
-        python -m appimagepack --entrypoint run.py .
+        python -m appimage build --entrypoint run.py .
 
     - name: Uložení hotového AppImage jako artefakt
       uses: actions/upload-artifact@v4
