@@ -8,6 +8,15 @@ import sys
 import types
 from pathlib import Path
 
+import sys
+import os
+
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    os.chdir(sys._MEIPASS)
+    if sys._MEIPASS not in sys.path:
+        sys.path.insert(0, sys._MEIPASS)
+
+
 
 def _load_app():
     root = Path(__file__).resolve().parent
