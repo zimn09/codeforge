@@ -11,10 +11,17 @@ from pathlib import Path
 import sys
 import os
 
+# Oprava pro dynamické spouštění dalších .py souborů v PyInstalleru
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     os.chdir(sys._MEIPASS)
     if sys._MEIPASS not in sys.path:
         sys.path.insert(0, sys._MEIPASS)
+
+# EXPLICITNÍ IMPORTY PRO PYINSTALLER
+# Zde uveďte standardní moduly, které importujete v ostatních .py souborech
+import http.server
+import socketserver # Často se používá společně s http.server
+
 
 
 
